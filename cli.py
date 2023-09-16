@@ -12,6 +12,9 @@ from utils.db import SQLiteDB
 
 
 def main():
+    """
+    Entrypoint for CLI
+    """
     parser = ArgumentParser(prog="LingoDect")
     parser.add_argument("-f", "--file", type=str, default=None,
                         help="<string> opens and reads the specified text/image/audio file (relative/absolute path).")
