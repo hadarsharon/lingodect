@@ -327,13 +327,17 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# Large Datasets
-datasets/image/IAM/words
-datasets/speech
-datasets/text
+# SQLite
 datasets/db.sqlite
 
-# Models
+# Handwritten words training data
+datasets/image/IAM/words
+
+# Uploaded speech files (but retain folder)
+datasets/speech
+!datasets/speech/.gitkeep
+
+# Models (until ready with Git LFS)
 models/
 
 # Cache
