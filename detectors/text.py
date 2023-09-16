@@ -120,13 +120,18 @@ class MultinomialNBDetector:
             datasets: BaseTextDataset | list[BaseTextDataset],
             minibatches: Optional[int] = None
     ):
+        logger.info("Begin deserializing MultinomialNBDetector objects.")
         klass = cls(datasets=datasets, minibatches=minibatches)
         with open(cls.MODEL_DIRECTORY / "model.joblib", "rb") as f:
+            logger.info(rf"Loading model from {f.name}...")
             klass.model = joblib.load(f)
         with open(cls.MODEL_DIRECTORY / "label_encoder.joblib", "rb") as f:
+            logger.info(rf"Loading label encoder from {f.name}...")
             klass.label_encoder = joblib.load(f)
         with open(cls.MODEL_DIRECTORY / "hashing_vectorizer.joblib", "rb") as f:
+            logger.info(rf"Loading hashing vectorizer from {f.name}...")
             klass.hashing_vectorizer = joblib.load(f)
+        logger.info("Done deserializing MultinomialNBDetector objects.")
         return klass
 
     @classmethod
@@ -135,27 +140,42 @@ class MultinomialNBDetector:
             datasets: BaseTextDataset | list[BaseTextDataset],
             minibatches: Optional[int] = None
     ):
+        logger.info("Begin deserializing MultinomialNBDetector objects.")
         klass = cls(datasets=datasets, minibatches=minibatches)
         with open(cls.MODEL_DIRECTORY / "model.pickle", "rb") as f:
+            logger.info(rf"Loading model from {f.name}...")
             klass.model = dill.load(f)
         with open(cls.MODEL_DIRECTORY / "label_encoder.pickle", "rb") as f:
+            logger.info(rf"Loading label encoder from {f.name}...")
             klass.label_encoder = dill.load(f)
         with open(cls.MODEL_DIRECTORY / "hashing_vectorizer.pickle", "rb") as f:
+            logger.info(rf"Loading hashing vectorizer from {f.name}...")
             klass.hashing_vectorizer = dill.load(f)
+        logger.info("Done deserializing MultinomialNBDetector objects.")
         return klass
 
     def to_joblib(self):
+        logger.info("Begin serializing MultinomialNBDetector objects.")
         with open(self.MODEL_DIRECTORY / "model.joblib", "wb") as f:
-            joblib.dump(self.model, f, compress=True)
+            logger.info(rf"Dumping model to {f.name}...")
+            joblib.dump(self.model, f, compress=True)  # compression needed because model is large on disk
         with open(self.MODEL_DIRECTORY / "label_encoder.joblib", "wb") as f:
-            joblib.dump(self.label_encoder, f, compress=True)
+            logger.info(rf"Dumping label encoder to {f.name}...")
+            joblib.dump(self.label_encoder, f)
         with open(self.MODEL_DIRECTORY / "hashing_vectorizer.joblib", "wb") as f:
-            joblib.dump(self.hashing_vectorizer, f, compress=True)
+            logger.info(rf"Dumping hashing vectorizer to {f.name}...")
+            joblib.dump(self.hashing_vectorizer, f)
+        logger.info("Done serializing MultinomialNBDetector objects.")
 
     def to_pickle(self):
+        logger.info("Begin serializing MultinomialNBDetector objects.")
         with open(self.MODEL_DIRECTORY / "model.pickle", "wb") as f:
+            logger.info(rf"Dumping model to {f.name}...")
             dill.dump(self.model, f)
         with open(self.MODEL_DIRECTORY / "label_encoder.pickle", "wb") as f:
+            logger.info(rf"Dumping label encoder to {f.name}...")
             dill.dump(self.label_encoder, f)
         with open(self.MODEL_DIRECTORY / "hashing_vectorizer.pickle", "wb") as f:
+            logger.info(rf"Dumping hashing vectorizer to {f.name}...")
             dill.dump(self.hashing_vectorizer, f)
+        logger.info("Done serializing MultinomialNBDetector objects.")
