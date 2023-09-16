@@ -1,7 +1,7 @@
 import speech_recognition as sr
 from speechbrain.pretrained import EncoderClassifier
 
-from config import Paths
+from utils.config import Paths
 
 
 class ECAPA_TDNN:  # noinspection PyPep8Naming

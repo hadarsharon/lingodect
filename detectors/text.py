@@ -15,7 +15,7 @@ from sklearn.feature_extraction.text import HashingVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.preprocessing import LabelEncoder
 
-from config import Paths
+from utils.config import Paths
 from utils.datasets import BaseTextDataset
 
 logger = logging.getLogger()

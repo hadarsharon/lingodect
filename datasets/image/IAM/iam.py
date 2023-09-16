@@ -8,7 +8,7 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from tensorflow.python.framework.ops import EagerTensor
 
-from config import Paths
+from utils.config import Paths
 from utils.datasets import BaseImageDataset
 
 logger = logging.getLogger()

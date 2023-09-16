@@ -14,7 +14,7 @@ from typing import Optional, NoReturn, Literal
 import pandas as pd
 from keras.layers import StringLookup
 
-from config import Paths
+from utils.config import Paths
 
 logger = logging.getLogger()
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)

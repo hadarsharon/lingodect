@@ -13,7 +13,7 @@ from faker.config import AVAILABLE_LOCALES
 from flask import Flask, request, render_template
 from werkzeug.datastructures import FileStorage
 
-from config import Paths
+from utils.config import Paths
 from detectors.speech import ECAPA_TDNN
 from detectors.text import MultinomialNBDetector
 from utils.datasets import Massive, CLIRMatrix
@@ -152,6 +152,7 @@ def process_file(req: request, file_input: FileStorage) -> AppParams:
 def process_input(req: request):
     text_input: str = req.form.get("textInput")
     file_input: FileStorage = req.files.get("fileInput")
+    params: AppParams
     if file_input:
         params = process_file(req=req, file_input=file_input)
     elif text_input:
