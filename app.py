@@ -56,10 +56,6 @@ APP_PORT: int = 8080
 app = Flask(__name__)
 
 
-def detect(text: str) -> list[str]:
-    return text_detector.predict(text=text)
-
-
 def open_browser():
     webbrowser.open_new(rf"http://{APP_HOST}:{APP_PORT}/")
 
@@ -104,7 +100,7 @@ def index():
                             for t in language_codes
                         ]
                 case _:  # single language
-                    language_codes: list[str] = detect(text=text_input)
+                    language_codes: list[str] = text_detector.predict(text=text_input)
                     language_names: list[str] = [
                         getattr(pycountry.languages.get(alpha_2=language_codes[0]), "name", "Unknown")]
         else:
@@ -139,4 +135,4 @@ if __name__ == "__main__":
         text_detector = MultinomialNBDetector.from_pickle(datasets=datasets)
     speech_detector = ECAPA_TDNN()
     Timer(1, open_browser).start()
-    app.run(host=APP_HOST, port=APP_PORT)
+    app.run(host=APP_HOST, port=APP_PORT, debug=True)
