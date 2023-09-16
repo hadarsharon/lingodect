@@ -333,9 +333,10 @@ datasets/db.sqlite
 # Handwritten words training data
 datasets/image/IAM/words
 
-# Uploaded speech files (but retain folder)
+# Uploaded speech files (but retain dataset folder)
 datasets/speech
 !datasets/speech/.gitkeep
+models/speech
 
 # Cache
 audio_cache
