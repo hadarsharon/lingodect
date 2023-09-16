@@ -182,7 +182,7 @@ def process_input(req: request):
 def index():
     if request.method == "GET":
         return render_template("index.html", fake_texts=fake_texts, zip=zip)
-    else:  # TODO: functinos
+    else:
         return process_input(req=request)
 
 
