@@ -335,3 +335,6 @@ datasets/db.sqlite
 
 # Models
 models/
+
+# Cache
+audio_cache
