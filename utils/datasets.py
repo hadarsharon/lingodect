@@ -49,6 +49,10 @@ class BaseTextDataset(ABC):
             table: Optional[str] = None,
             columns: Optional[tuple[str, ...]] = None
     ) -> Optional[NoReturn]:
+        """
+        Helper method to support loading an external data to a SQLite Database
+        Each dataset may override this method for more specific implementations or other intricate cases
+        """
         if not self.sqlite_conn:
             raise NotImplementedError(
                 "'to_sqlite' only supported if class was instantiated with 'sqlite_conn' argument supplied."
@@ -79,6 +83,10 @@ class BaseTextDataset(ABC):
             table: Optional[str] = None,
             columns: Optional[tuple[str, ...]] = None
     ) -> pd.DataFrame:
+        """
+        Helper method to support loading a dataset persisted on an SQLite Database, to a pandas DataFrame
+        Each dataset may override this method for more specific implementations or other intricate cases
+        """
         if not self.sqlite_conn:
             raise NotImplementedError(
                 "'from_sqlite' only supported if class was instantiated with 'sqlite_conn' argument supplied."

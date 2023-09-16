@@ -10,6 +10,10 @@ from utils.datasets import BaseTextDataset
 
 
 class Massive(BaseTextDataset):  # TODO: perhaps take from Hugging Face
+    """
+    A loader class pertaining to the MASSIVE dataset.
+    Includes helper methods for processing, preparing and transforming the dataset for NLP models used in this app.
+    """
     DATA_DIR = Paths.DATASETS / "text/MASSIVE/data"
     DATA_EXT = ".jsonl.gz"
     DATA_FILES = glob.glob(rf"{DATA_DIR}/*{DATA_EXT}")
@@ -24,6 +28,10 @@ class Massive(BaseTextDataset):  # TODO: perhaps take from Hugging Face
 
     @staticmethod
     def read_dataframe(language: Optional[str] = None, columns: Optional[tuple[str, ...]] = None) -> pd.DataFrame:
+        """
+        Return the dataset in a pandas DataFrame form.
+        Includes support for filtering on specific languages and/or columns from the dataset.
+        """
         if language:
             try:  # fetch language-specific file
                 [language_file] = filter(lambda f: Path(f).name[:2] == language, Massive.DATA_FILES)
@@ -44,6 +52,9 @@ class Massive(BaseTextDataset):  # TODO: perhaps take from Hugging Face
         return df
 
     def get_base_dataset(self, partition: Optional[Literal["train", "test", "dev"]] = None) -> pd.DataFrame:
+        """
+        Get the base dataset as-is in pandas DataFrame form, with an optional split by partition
+        """
         if self.sqlite_conn:  # prefer sqlite as it's faster than reading on-the-fly
             sql = f"""
                     SELECT 
