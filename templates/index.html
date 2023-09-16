@@ -47,9 +47,9 @@
                 </div>
                 <div class="form-group">
                     <div class="container">
-                        <label for="fileInput">File Input (Image / Speech):</label>
+                        <label for="fileInput">File Input (Plain Text / Image / Speech):</label>
                         <input type="file" class="form-control-file border rounded" name="fileInput" id="fileInput"
-                               accept="image/*,audio/*" onchange="checkInput();">
+                               accept=".txt,image/*,audio/*" onchange="checkInput();">
                     </div>
                 </div>
                 <div>
@@ -122,6 +122,13 @@ This feature is only supported for Audio-based input."></i>
                     {% endif -%}
                 </h2>
                 {% endif -%}
+            </div>
+            {% elif exception -%}
+            <div style="margin-top: 1%; margin-bottom: 1%">
+                <hr>
+                <div class="alert alert-danger" role="alert" style="margin-top: 1%; margin-bottom: 1%;">
+                    <span>{{ exception }}</span>
+                </div>
             </div>
             {% endif -%}
         </div>

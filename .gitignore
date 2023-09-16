@@ -331,6 +331,10 @@ cython_debug/
 datasets/image/IAM/words
 datasets/speech
 datasets/text
+datasets/db.sqlite
 
 # Models
 models/
+
+# Cache
+audio_cache
