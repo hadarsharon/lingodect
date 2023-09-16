@@ -1,2 +1,7 @@
+# Application Database
 *.sqlite filter=lfs diff=lfs merge=lfs -text
+# Application Datasets
 *.parquet.gz filter=lfs diff=lfs merge=lfs -text
+# Application Models
+*.pickle filter=lfs diff=lfs merge=lfs -text
+*.joblib filter=lfs diff=lfs merge=lfs -text

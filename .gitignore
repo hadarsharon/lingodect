@@ -337,8 +337,5 @@ datasets/image/IAM/words
 datasets/speech
 !datasets/speech/.gitkeep
 
-# Models (until ready with Git LFS)
-models/
-
 # Cache
 audio_cache
