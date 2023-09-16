@@ -21,12 +21,18 @@ class ECAPA_TDNN:  # noinspection PyPep8Naming
         self.recognizer = sr.Recognizer()
 
     def transcribe_speech(self, audio_path: str, language: str) -> str:
+        """
+        Provides textual transcription for a given audio file in a given language
+        """
         with sr.AudioFile(audio_path) as source:
             audio_data = self.recognizer.listen(source)
             return self.recognizer.recognize_google(audio_data=audio_data, language=language)
 
     @staticmethod
     def detect_speech_language(audio_path: str, save_dir: str = MODEL_DIRECTORY) -> list[str]:
+        """
+        Detects the language being spoken in a given audio file
+        """
         language_id = EncoderClassifier.from_hparams(
             source=ECAPA_TDNN.MODEL_SOURCE,
             savedir=save_dir
