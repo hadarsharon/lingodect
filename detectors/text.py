@@ -146,11 +146,11 @@ class MultinomialNBDetector:
 
     def to_joblib(self):
         with open(self.MODEL_DIRECTORY / "model.joblib", "wb") as f:
-            joblib.dump(self.model, f, compress=3)
+            joblib.dump(self.model, f, compress=True)
         with open(self.MODEL_DIRECTORY / "label_encoder.joblib", "wb") as f:
-            joblib.dump(self.label_encoder, f, compress=3)
+            joblib.dump(self.label_encoder, f, compress=True)
         with open(self.MODEL_DIRECTORY / "hashing_vectorizer.joblib", "wb") as f:
-            joblib.dump(self.hashing_vectorizer, f, compress=3)
+            joblib.dump(self.hashing_vectorizer, f, compress=True)
 
     def to_pickle(self):
         with open(self.MODEL_DIRECTORY / "model.pickle", "wb") as f:
