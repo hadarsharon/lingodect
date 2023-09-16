@@ -13,7 +13,7 @@ from flask import Flask, request, render_template
 from werkzeug.datastructures import FileStorage
 
 from config import Paths
-from detectors.speech import detect_speech_language, transcribe_speech
+from detectors.speech import ECAPA_TDNN
 from detectors.text import MultinomialNBDetector
 from utils.datasets import Massive, CLIRMatrix
 from utils.db import SQLiteDB
@@ -57,7 +57,7 @@ app = Flask(__name__)
 
 
 def detect(text: str) -> list[str]:
-    return detector.predict(text=text)
+    return text_detector.predict(text=text)
 
 
 def open_browser():
@@ -81,18 +81,19 @@ def index():
             suffix = Path(file_input.filename).suffix
             with NamedTemporaryFile(dir=Paths.DATASETS / "speech", suffix=suffix, delete=True) as tf:
                 tf.write(file_input.stream.read())
-                predictions: list[str] = detect_speech_language(audio_path=tf.name) or []
+                predictions: list[str] = speech_detector.detect_speech_language(audio_path=tf.name) or []
                 if predictions:
                     language_codes, language_names = ([str.strip(pred)] for pred in predictions[0].split(r':'))
                     if transcribe:
-                        transcript = transcribe_speech(audio_path=tf.name, language=language_codes[0])
+                        transcript = speech_detector.transcribe_speech(audio_path=tf.name, language=language_codes[0])
                 else:
                     language_codes, language_names, transcript = ["?"], ["Unknown"], None
         elif text_input:
             content_type = "text"
             match request.form.get("multiLanguageSwitch", "").lower():  # TODO: functinos
                 case "on":  # multi language
-                    language_codes: list[str] | list[tuple[int, str]] = detector.predict_probabilities(text=text_input)
+                    language_codes: list[str] | list[tuple[int, str]] = text_detector.predict_probabilities(
+                        text=text_input)
                     if len(language_codes) == 1:  # singleton
                         language_names: list[str] = [
                             getattr(pycountry.languages.get(alpha_2=language_codes[0]), "name", "Unknown")
@@ -135,6 +136,7 @@ if __name__ == "__main__":
     fake_texts = [fake.text() for _ in range(FAKE_TEXTS)]
     with closing(db.get_connection()) as conn:
         datasets = [Massive(sqlite_conn=conn), CLIRMatrix(sqlite_conn=conn)]
-        detector = MultinomialNBDetector.from_pickle(datasets=datasets)
+        text_detector = MultinomialNBDetector.from_pickle(datasets=datasets)
+    speech_detector = ECAPA_TDNN()
     Timer(1, open_browser).start()
     app.run(host=APP_HOST, port=APP_PORT)
