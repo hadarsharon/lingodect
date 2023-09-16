@@ -8,6 +8,7 @@ import sys
 from typing import Optional
 
 import dill
+import joblib
 import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import HashingVectorizer
@@ -30,7 +31,7 @@ class MultinomialNBDetector:
     """
     Detection model based on the popular Multinomial Naive Bayes algorithm.
     """
-    MODEL_PICKLE = Paths.MODELS / "text/multinomial_nb"
+    MODEL_DIRECTORY = Paths.MODELS / "text/multinomial_nb"
 
     def __init__(
             self,
@@ -114,24 +115,47 @@ class MultinomialNBDetector:
         return [(i, self.label_encoder.inverse_transform([t[1]])[0]) for i, t in enumerate(probabilities, start=1)]
 
     @classmethod
+    def from_joblib(
+            cls,
+            datasets: BaseTextDataset | list[BaseTextDataset],
+            minibatches: Optional[int] = None
+    ):
+        klass = cls(datasets=datasets, minibatches=minibatches)
+        with open(cls.MODEL_DIRECTORY / "model.joblib", "rb") as f:
+            klass.model = joblib.load(f)
+        with open(cls.MODEL_DIRECTORY / "label_encoder.joblib", "rb") as f:
+            klass.label_encoder = joblib.load(f)
+        with open(cls.MODEL_DIRECTORY / "hashing_vectorizer.joblib", "rb") as f:
+            klass.hashing_vectorizer = joblib.load(f)
+        return klass
+
+    @classmethod
     def from_pickle(
             cls,
             datasets: BaseTextDataset | list[BaseTextDataset],
             minibatches: Optional[int] = None
     ):
         klass = cls(datasets=datasets, minibatches=minibatches)
-        with open(cls.MODEL_PICKLE / "model.pickle", "rb") as f:
+        with open(cls.MODEL_DIRECTORY / "model.pickle", "rb") as f:
             klass.model = dill.load(f)
-        with open(cls.MODEL_PICKLE / "label_encoder.pickle", "rb") as f:
+        with open(cls.MODEL_DIRECTORY / "label_encoder.pickle", "rb") as f:
             klass.label_encoder = dill.load(f)
-        with open(cls.MODEL_PICKLE / "hashing_vectorizer.pickle", "rb") as f:
+        with open(cls.MODEL_DIRECTORY / "hashing_vectorizer.pickle", "rb") as f:
             klass.hashing_vectorizer = dill.load(f)
         return klass
 
+    def to_joblib(self):
+        with open(self.MODEL_DIRECTORY / "model.joblib", "wb") as f:
+            joblib.dump(self.model, f)
+        with open(self.MODEL_DIRECTORY / "label_encoder.joblib", "wb") as f:
+            joblib.dump(self.label_encoder, f)
+        with open(self.MODEL_DIRECTORY / "hashing_vectorizer.joblib", "wb") as f:
+            joblib.dump(self.hashing_vectorizer, f)
+
     def to_pickle(self):
-        with open(self.MODEL_PICKLE / "model.pickle", "wb") as f:
+        with open(self.MODEL_DIRECTORY / "model.pickle", "wb") as f:
             dill.dump(self.model, f)
-        with open(self.MODEL_PICKLE / "label_encoder.pickle", "wb") as f:
+        with open(self.MODEL_DIRECTORY / "label_encoder.pickle", "wb") as f:
             dill.dump(self.label_encoder, f)
-        with open(self.MODEL_PICKLE / "hashing_vectorizer.pickle", "wb") as f:
+        with open(self.MODEL_DIRECTORY / "hashing_vectorizer.pickle", "wb") as f:
             dill.dump(self.hashing_vectorizer, f)
