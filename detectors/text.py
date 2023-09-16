@@ -30,6 +30,8 @@ logging.basicConfig(
 class MultinomialNBDetector:
     """
     Detection model based on the popular Multinomial Naive Bayes algorithm.
+    This classifier quickly and efficiently calculates the probabilities for a text being in a certain language,
+    and selects the biggest one.
     """
     MODEL_DIRECTORY = Paths.MODELS / "text/multinomial_nb"
 
@@ -87,15 +89,25 @@ class MultinomialNBDetector:
             logger.info(rf"Accuracy score (test/dataset {i}): {self.model.score(X_test, y_test)}")
 
     def predict(self, text: str) -> str:
+        """
+        Predict the most likely language of a given text
+        """
         X = self.hashing_vectorizer.transform([text]).toarray()
         y = self.model.predict(X)
         return self.label_encoder.inverse_transform(y)
 
     @staticmethod
     def _normalize_probabilities(probabilities: np.ndarray) -> np.ndarray:
+        """
+        Normalizes probabilities vector so that all results fit proportionally between 0 and 1
+        """
         return (probabilities - np.min(probabilities)) / (np.max(probabilities) - np.min(probabilities))
 
     def predict_probabilities(self, text: str, threshold: float = 0.2) -> list[str] | list[tuple[int, str]]:
+        """
+        Return a vector of probabilities for one or more languages that exceed a certain threshold between 0 and 1
+        This is particularly useful for texts that are likely to contain overlaps between multiple languages
+        """
         X = self.hashing_vectorizer.transform([text]).toarray()
         y = self.model.predict_proba(X)
         normalized = self._normalize_probabilities(probabilities=y)
@@ -109,6 +121,9 @@ class MultinomialNBDetector:
             return [(int(t[0] * 100), self.label_encoder.inverse_transform([t[1]])[0]) for t in probabilities]
 
     def predict_ranks(self, text: str, n: int = 3) -> list[tuple[int, str]]:
+        """
+        Returns a vector of prediction ranks, for n languages - without regard to filtering out unlikely languages
+        """
         X = self.hashing_vectorizer.transform([text]).toarray()
         y = self.model.predict_proba(X)
         probabilities = sorted(list(zip(y[0], self.model.classes_)), key=lambda t: t[0], reverse=True)[:n]
@@ -120,6 +135,9 @@ class MultinomialNBDetector:
             datasets: BaseTextDataset | list[BaseTextDataset],
             minibatches: Optional[int] = None
     ):
+        """
+        Deserialize model objects from joblib files
+        """
         logger.info("Begin deserializing MultinomialNBDetector objects.")
         klass = cls(datasets=datasets, minibatches=minibatches)
         with open(cls.MODEL_DIRECTORY / "model.joblib", "rb") as f:
@@ -140,6 +158,9 @@ class MultinomialNBDetector:
             datasets: BaseTextDataset | list[BaseTextDataset],
             minibatches: Optional[int] = None
     ):
+        """
+        Deserialize model objects from pickle files
+        """
         logger.info("Begin deserializing MultinomialNBDetector objects.")
         klass = cls(datasets=datasets, minibatches=minibatches)
         with open(cls.MODEL_DIRECTORY / "model.pickle", "rb") as f:
@@ -155,6 +176,9 @@ class MultinomialNBDetector:
         return klass
 
     def to_joblib(self):
+        """
+        Serialize model objects to joblib files (recommended over pickle due to performance and file size)
+        """
         logger.info("Begin serializing MultinomialNBDetector objects.")
         with open(self.MODEL_DIRECTORY / "model.joblib", "wb") as f:
             logger.info(rf"Dumping model to {f.name}")
@@ -168,6 +192,9 @@ class MultinomialNBDetector:
         logger.info("Done serializing MultinomialNBDetector objects.")
 
     def to_pickle(self):
+        """
+        Serialize model objects to pickle files
+        """
         logger.info("Begin serializing MultinomialNBDetector objects.")
         with open(self.MODEL_DIRECTORY / "model.pickle", "wb") as f:
             logger.info(rf"Dumping model to {f.name}")
