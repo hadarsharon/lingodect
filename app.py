@@ -83,6 +83,9 @@ def process_text(
 ):
     assert bool(text_input) != bool(file_input), "Exactly one of `text_input`, `file_input` must be supplied!"
 
+    if file_input:
+        text_input: str = file_input.stream.read().decode("utf-8")
+
     if multi_language:
         language_codes: list[str] | list[tuple[int, str]] = text_detector.predict_probabilities(text=text_input)
         if len(language_codes) == 1:  # singleton
