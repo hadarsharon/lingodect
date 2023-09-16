@@ -4,12 +4,9 @@ Wraps around the core library modules and serves the UI or CLI
 """
 from argparse import ArgumentParser
 from contextlib import closing
-from pathlib import Path
-
-from datasets import load_dataset
 
 from detectors.text import MultinomialNBDetector
-from utils.datasets import Massive, CLIRMatrix, Oscar
+from utils.datasets import Massive, CLIRMatrix
 from utils.db import SQLiteDB
 
 
@@ -34,9 +31,9 @@ def main():
         if args.init:
             detector = MultinomialNBDetector(datasets=datasets)
             detector.fit()
-            detector.to_pickle()
+            detector.to_joblib()
         else:
-            detector = MultinomialNBDetector.from_pickle(datasets=datasets)
+            detector = MultinomialNBDetector.from_joblib(datasets=datasets)
 
     if args.number > 1:
         print(detector.predict_ranks(text=args.string, n=args.number))
@@ -53,4 +50,3 @@ if __name__ == '__main__':
     #                        split="train")  # optional
     #
     # print("Sukces.")
-
