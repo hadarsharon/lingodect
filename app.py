@@ -104,18 +104,20 @@ def process_text(
 
 
 def process_audio(file_input: FileStorage, transcribe: bool = False) -> AppParams:
-    with NamedTemporaryFile(dir=Paths.DATASETS / "speech", suffix=Path(file_input.name).suffix, delete=True) as tf:
+    with NamedTemporaryFile(dir=Paths.DATASETS / "speech", suffix=Path(file_input.filename).suffix, delete=True) as tf:
         tf.write(file_input.stream.read())
         predictions: list[str] = speech_detector.detect_speech_language(audio_path=tf.name) or []
         if predictions:
             language_codes, language_names = ([str.strip(pred)] for pred in predictions[0].split(r':'))
-            if transcribe:
-                transcript = speech_detector.transcribe_speech(audio_path=tf.name, language=language_codes[0])
+            transcript = speech_detector.transcribe_speech(
+                audio_path=tf.name,
+                language=language_codes[0]
+            ) if transcribe else None
         else:
             language_codes, language_names, transcript = ["?"], ["Unknown"], None
 
     return AppParams(
-        detection_text=file_input.name,
+        detection_text=file_input.filename,
         language_codes=language_codes,
         language_names=language_names,
         transcript=transcript,
@@ -181,13 +183,7 @@ def index():
     if request.method == "GET":
         return render_template("index.html", fake_texts=fake_texts, zip=zip)
     else:  # TODO: functinos
-        if file_input:
-            ...
-        elif text_input:
-            ...
-        else:
-            ...  # TODO: error handling
-            return render_template("index.html")
+        return process_input(req=request)
 
 
 if __name__ == "__main__":
@@ -199,4 +195,4 @@ if __name__ == "__main__":
         text_detector = MultinomialNBDetector.from_pickle(datasets=datasets)
     speech_detector = ECAPA_TDNN()
     Timer(1, open_browser).start()
-    app.run(host=APP_HOST, port=APP_PORT, debug=True)
+    app.run(host=APP_HOST, port=APP_PORT)
