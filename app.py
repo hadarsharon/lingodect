@@ -16,7 +16,8 @@ from werkzeug.datastructures import FileStorage
 from detectors.speech import ECAPA_TDNN
 from detectors.text import MultinomialNBDetector
 from utils.config import Paths
-from utils.datasets import Massive, CLIRMatrix
+from loaders.text.massive import Massive
+from loaders.text.clirmatrix import CLIRMatrix
 from utils.db import SQLiteDB
 
 LOCALES_DATAFRAME = pd.DataFrame([locale.split(r'_') for locale in AVAILABLE_LOCALES],

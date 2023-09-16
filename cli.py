@@ -6,7 +6,8 @@ from argparse import ArgumentParser
 from contextlib import closing
 
 from detectors.text import MultinomialNBDetector
-from utils.datasets import Massive, CLIRMatrix
+from loaders.text.massive import Massive
+from loaders.text.clirmatrix import CLIRMatrix
 from utils.db import SQLiteDB
 
 
