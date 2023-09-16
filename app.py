@@ -13,9 +13,9 @@ from faker.config import AVAILABLE_LOCALES
 from flask import Flask, request, render_template
 from werkzeug.datastructures import FileStorage
 
-from utils.config import Paths
 from detectors.speech import ECAPA_TDNN
 from detectors.text import MultinomialNBDetector
+from utils.config import Paths
 from utils.datasets import Massive, CLIRMatrix
 from utils.db import SQLiteDB
 
@@ -56,13 +56,14 @@ APP_PORT: int = 8080
 
 app = Flask(__name__)
 
-app_params_fields = ["detection_text", "language_codes", "language_names", "transcript", "content_type"]
+app_params_fields = ["detection_text", "language_codes", "language_names", "transcript", "content_type", "exception"]
 app_params_defaults = {
     "detection_text": None,
     "language_codes": [],
     "language_names": [],
     "transcript": False,
-    "content_type": "unknown file"
+    "content_type": "unknown file",
+    "errors": None
 }
 
 AppParams = namedtuple(
@@ -98,12 +99,8 @@ def process_text(
         language_codes: list[str] = text_detector.predict(text=text_input)
         language_names: list[str] = [getattr(pycountry.languages.get(alpha_2=language_codes[0]), "name", "Unknown")]
 
-    return AppParams(
-        detection_text=text_input,
-        language_codes=language_codes,
-        language_names=language_names,
-        content_type="text file" if file_input else "text"
-    )
+    return AppParams(detection_text=text_input, language_codes=language_codes, language_names=language_names,
+                     content_type="text file" if file_input else "text")  # noqa
 
 
 def process_audio(file_input: FileStorage, transcribe: bool = False) -> AppParams:
@@ -124,7 +121,8 @@ def process_audio(file_input: FileStorage, transcribe: bool = False) -> AppParam
         language_codes=language_codes,
         language_names=language_names,
         transcript=transcript,
-        content_type="audio file"
+        content_type="audio file",
+        exception=None
     )
 
 
@@ -150,36 +148,46 @@ def process_file(req: request, file_input: FileStorage) -> AppParams:
 
 
 def process_input(req: request):
-    text_input: str = req.form.get("textInput")
-    file_input: FileStorage = req.files.get("fileInput")
-    params: AppParams
-    if file_input:
-        params = process_file(req=req, file_input=file_input)
-    elif text_input:
-        params = process_text(
-            text_input=text_input,
-            multi_language=req.form.get("multiLanguageSwitch", "").lower() == "on"
+    try:
+        text_input: str = req.form.get("textInput")
+        file_input: FileStorage = req.files.get("fileInput")
+        params: AppParams
+        if file_input:
+            params = process_file(req=req, file_input=file_input)
+        elif text_input:
+            params = process_text(
+                text_input=text_input,
+                multi_language=req.form.get("multiLanguageSwitch", "").lower() == "on"
+            )
+        else:
+            ...  # TODO: error handling
+
+        country_codes: Iterable[str] = filter(
+            None,
+            LOCALES_DATAFRAME[
+                LOCALES_DATAFRAME["language_code"].isin(params.language_codes)].country_code.unique().tolist()
         )
+
+    except Exception as e:
+        return render_template(
+            "index.html",
+            exception=e,
+            zip=zip
+        )
+
     else:
-        ...  # TODO: error handling
-
-    country_codes: Iterable[str] = filter(
-        None,
-        LOCALES_DATAFRAME[
-            LOCALES_DATAFRAME["language_code"].isin(params.language_codes)].country_code.unique().tolist()
-    )
-
-    return render_template(
-        "index.html",
-        fake_texts=fake_texts,
-        country_codes=country_codes,
-        detection_text=params.detection_text,
-        language_codes=params.language_codes,
-        language_names=params.language_names,
-        content_type=params.content_type,
-        transcript=params.transcript,
-        zip=zip
-    )
+        return render_template(
+            "index.html",
+            fake_texts=fake_texts,
+            country_codes=country_codes,
+            detection_text=params.detection_text,
+            language_codes=params.language_codes,
+            language_names=params.language_names,
+            content_type=params.content_type,
+            transcript=params.transcript,
+            exception=params.exception,
+            zip=zip
+        )
 
 
 @app.route('/', methods=["GET", "POST"])

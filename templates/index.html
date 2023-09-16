@@ -123,6 +123,13 @@ This feature is only supported for Audio-based input."></i>
                 </h2>
                 {% endif -%}
             </div>
+            {% elif exception -%}
+            <div style="margin-top: 1%; margin-bottom: 1%">
+                <hr>
+                <div class="alert alert-danger" role="alert" style="margin-top: 1%; margin-bottom: 1%;">
+                    <span>{{ exception }}</span>
+                </div>
+            </div>
             {% endif -%}
         </div>
     </div>
