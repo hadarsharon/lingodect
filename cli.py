@@ -47,10 +47,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    # dataset = load_dataset("oscar-corpus/OSCAR-2301",
-    #                        token=Oscar.ACCESS_TOKEN,  # required
-    #                        language="ar",
-    #                        streaming=True,  # optional
-    #                        split="train")  # optional
-    #
-    # print("Sukces.")
