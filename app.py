@@ -78,6 +78,10 @@ def open_browser():
     webbrowser.open_new(rf"http://{APP_HOST}:{APP_PORT}/")
 
 
+def get_language_name(language_code: str) -> str:
+    language = pycountry.languages.get(alpha_2=language_code) or pycountry.languages.get(alpha_3=language_code)
+    return getattr(language, "name", "Unknown")
+
 def process_text(
         text_input: Optional[str] = None,
         file_input: Optional[FileStorage] = None,
@@ -91,14 +95,12 @@ def process_text(
     if multi_language:
         language_codes: list[str] | list[tuple[int, str]] = text_detector.predict_probabilities(text=text_input)
         if len(language_codes) == 1:  # singleton
-            language_names: list[str] = [getattr(pycountry.languages.get(alpha_2=language_codes[0]), "name", "Unknown")]
+            language_names: list[str] = [get_language_name(language_code=language_codes[0])]
         else:  # multiple
-            language_names: list[str] = [
-                getattr(pycountry.languages.get(alpha_2=t[1]), "name", "Unknown") for t in language_codes
-            ]
+            language_names: list[str] = [get_language_name(language_code=t[1]) for t in language_codes]
     else:
         language_codes: list[str] = text_detector.predict(text=text_input)
-        language_names: list[str] = [getattr(pycountry.languages.get(alpha_2=language_codes[0]), "name", "Unknown")]
+        language_names: list[str] = [get_language_name(language_code=language_codes[0])]
 
     return AppParams(detection_text=text_input, language_codes=language_codes, language_names=language_names,
                      content_type="text file" if file_input else "text")  # noqa
