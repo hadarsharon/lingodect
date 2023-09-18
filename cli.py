@@ -29,15 +29,13 @@ def main():
     if bool(args.file) == bool(args.string):
         raise SystemExit("Bad arguments: expected exactly one of `file` (-f, --file) and `input` (-i, --input)")
 
-    db = SQLiteDB()
-    with closing(db.get_connection()) as conn:
-        datasets = [Massive(sqlite_conn=conn), CLIRMatrix(sqlite_conn=conn)]
-        if args.init:
-            detector = MultinomialNBDetector(datasets=datasets)
-            detector.fit()
-            detector.to_joblib()
-        else:
-            detector = MultinomialNBDetector.from_joblib(datasets=datasets)
+    datasets = [Massive(), CLIRMatrix()]
+    if args.init:
+        detector = MultinomialNBDetector(datasets=datasets)
+        detector.fit()
+        detector.to_joblib()
+    else:
+        detector = MultinomialNBDetector.from_joblib(datasets=datasets)
 
     if args.number > 1:
         print(detector.predict_ranks(text=args.string, n=args.number))

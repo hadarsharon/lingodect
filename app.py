@@ -202,12 +202,10 @@ def index():
 
 
 if __name__ == "__main__":
-    db = SQLiteDB()
     fake = Faker(FAKE_TEXT_LOCALES)
     fake_texts = [fake.text() for _ in range(FAKE_TEXTS)]
-    with closing(db.get_connection()) as conn:
-        datasets = [Massive(sqlite_conn=conn), CLIRMatrix(sqlite_conn=conn)]
-        text_detector = MultinomialNBDetector.from_joblib(datasets=datasets)
+    datasets = [Massive(), CLIRMatrix()]
+    text_detector = MultinomialNBDetector.from_joblib(datasets=datasets)
     speech_detector = ECAPA_TDNN()
     Timer(1, open_browser).start()
     app.run(host=APP_HOST, port=APP_PORT)
