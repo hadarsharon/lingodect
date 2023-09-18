@@ -66,7 +66,7 @@ class Massive(BaseTextDataset):  # TODO: perhaps take from Hugging Face
 
             df = self.from_sqlite(sql=sql)
         else:  # if no sqlite connection supplied, read the data on-the-fly
-            df = self.read_dataframe(columns=(self.LANGUAGE_KEY, self.TEXT_KEY))
+            df = self.read_dataframe(columns=(self.LANGUAGE_KEY, self.TEXT_KEY, self.PARTITION_KEY))
             if partition:  # on-the-fly equivalent of above `WHERE` clause
                 df = df[df[self.partition_key].str.lower() == partition.lower()]
             # on-the-fly equivalent of above `LOWER` & `SUBSTR` functions
@@ -85,3 +85,7 @@ class Massive(BaseTextDataset):  # TODO: perhaps take from Hugging Face
     @cached_property
     def dev_dataset(self) -> pd.DataFrame:
         return self.get_base_dataset(partition="dev")
+
+if __name__ == "__main__":
+    massive = Massive()
+    massive.get_base_dataset(partition="train")
