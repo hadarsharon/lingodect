@@ -95,9 +95,7 @@ def build_model(dataset: BaseImageDataset):
 
 if __name__ == "__main__":
     iam = IAM()
-    # labels = iam.get_labels(partition="train")
-    # vectorized = iam.vectorize_label(label=labels[0])
-    # dataset = iam.prepare_dataset()
+    dataset = iam.prepare_dataset()
     model = build_model(dataset=iam)
     model.summary()
     print("Done.")
