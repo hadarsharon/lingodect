@@ -3,7 +3,7 @@ Module for defining image-based handwritten language detection models and their 
 These models are used with Datasets from the datasets.py module, to perform language classification on text.
 """
 
-from datasets.image.IAM.iam import IAM
+from loaders.image.iam import IAM
 
 characters = {}
 

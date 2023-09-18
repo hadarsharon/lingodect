@@ -113,10 +113,9 @@ class IAM(BaseImageDataset):
 
     def vectorize_label(self, label: str) -> EagerTensor:
         padding_token = 99
-        mapped = self.char_to_num(tf.strings.unicode_split(label, input_encoding="UTF-8"))
-        print(label)
+        label = self.char_to_num(tf.strings.unicode_split(label, input_encoding="UTF-8"))
         return tf.pad(
-            tensor=mapped,
+            tensor=label,
             paddings=[[0, self.max_label_length_train - len(label)]],
             constant_values=padding_token
         )
