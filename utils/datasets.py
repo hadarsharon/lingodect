@@ -163,7 +163,7 @@ class BaseImageDataset(ABC):
         Should return the vocabulary that comprises the image labels (i.e. transcriptions) in the partition
         """
 
-    def prepare_dataset(self) -> PrefetchDataset:
+    def prepare_dataset(self, partition: Literal["train", "test", "dev"]) -> PrefetchDataset:
         """
         This method should prepare the dataset to be forwarded to the model
         """

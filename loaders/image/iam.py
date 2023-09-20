@@ -166,9 +166,9 @@ class IAM(BaseImageDataset):
     def process_images_labels(self, image_path: str, label: str) -> dict[str, EagerTensor]:
         return {"image": self.preprocess_image(image_path=image_path), "label": self.vectorize_label(label=label)}
 
-    def prepare_dataset(self) -> PrefetchDataset:
+    def prepare_dataset(self, partition: Literal["train", "test", "dev"]) -> PrefetchDataset:
         dataset = tf.data.Dataset.from_tensor_slices(
-            tensors=(self.get_image_paths(partition="train"), self.get_labels(partition="train"))
+            tensors=(self.get_image_paths(partition=partition), self.get_labels(partition=partition))
         ).map(
             self.process_images_labels, num_parallel_calls=AUTOTUNE
         )
