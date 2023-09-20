@@ -3,12 +3,10 @@ Main module for direct interactive usage of the library
 Wraps around the core library modules and serves the UI or CLI
 """
 from argparse import ArgumentParser
-from contextlib import closing
 
 from detectors.text import MultinomialNBDetector
-from loaders.text.massive import Massive
 from loaders.text.clirmatrix import CLIRMatrix
-from utils.db import SQLiteDB
+from loaders.text.massive import Massive
 
 
 def main():
