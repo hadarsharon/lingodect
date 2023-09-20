@@ -71,6 +71,12 @@ AppParams = namedtuple(
     defaults=[app_params_defaults.get(field) for field in app_params_fields]
 )
 
+fake = Faker(FAKE_TEXT_LOCALES)
+fake_texts = [fake.text() for _ in range(FAKE_TEXTS)]
+datasets = [Massive(), CLIRMatrix()]
+text_detector = MultinomialNBDetector.from_joblib(datasets=datasets)
+speech_detector = ECAPA_TDNN()
+
 
 def open_browser():
     webbrowser.open_new(rf"http://{APP_HOST}:{APP_PORT}/")
@@ -201,10 +207,5 @@ def index():
 
 
 if __name__ == "__main__":
-    fake = Faker(FAKE_TEXT_LOCALES)
-    fake_texts = [fake.text() for _ in range(FAKE_TEXTS)]
-    datasets = [Massive(), CLIRMatrix()]
-    text_detector = MultinomialNBDetector.from_joblib(datasets=datasets)
-    speech_detector = ECAPA_TDNN()
     Timer(1, open_browser).start()
     app.run(host=APP_HOST, port=APP_PORT)

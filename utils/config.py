@@ -12,3 +12,4 @@ class Paths:
     LOADERS = PROJECT_ROOT / "loaders"
     UTILS = PROJECT_ROOT / "utils"
     MODELS = PROJECT_ROOT / "models"
+    TESTS = PROJECT_ROOT / "tests"
