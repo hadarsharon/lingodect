@@ -11,6 +11,7 @@ from typing import Optional, NoReturn, Literal
 
 import pandas as pd
 from keras.layers import StringLookup
+from tensorflow.python.data.ops.dataset_ops import PrefetchDataset
 
 logger = logging.getLogger()
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -135,11 +136,13 @@ class BaseImageDataset(ABC):
     """
     IMAGE_PATH_KEY: str
     IMAGE_TRANSCRIPTION_KEY: str
+    IMAGE_HEIGHT: int
+    IMAGE_WIDTH: int
 
     def __init__(
             self,
-            image_path_key: Optional[str] = None,
-            image_transcription_key: Optional[str] = None
+            image_path_key: str,
+            image_transcription_key: str
     ):
         self.image_path_key = image_path_key or self.IMAGE_PATH_KEY
         self.image_transcription_key = image_transcription_key or self.IMAGE_TRANSCRIPTION_KEY
@@ -158,6 +161,11 @@ class BaseImageDataset(ABC):
     def get_vocabulary(self, partition: Literal["train", "test", "dev"]) -> set[str]:
         """
         Should return the vocabulary that comprises the image labels (i.e. transcriptions) in the partition
+        """
+
+    def prepare_dataset(self, partition: Literal["train", "test", "dev"]) -> PrefetchDataset:
+        """
+        This method should prepare the dataset to be forwarded to the model
         """
 
     @cached_property

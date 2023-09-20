@@ -6,6 +6,7 @@ from typing import Literal
 import pandas as pd
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
+from tensorflow.python.data.ops.dataset_ops import PrefetchDataset
 from tensorflow.python.framework.ops import EagerTensor
 
 from utils.config import Paths
@@ -27,13 +28,18 @@ class IAM(BaseImageDataset):
     METADATA_FILE = Paths.DATASETS / "image/IAM/words.txt"
     IMAGE_TRANSCRIPTION_KEY = "transcription"
     IMAGE_PATH_KEY = "img_path"
+    IMAGE_HEIGHT = 32
+    IMAGE_WIDTH = 128
 
     def __init__(self, train_size: float = 0.9, test_dev_size: float = 0.1, batch_size: int = 64):
         self.train, self.test, self.dev = (
             self.get_train_test_dev_dataset(train_size=train_size, test_dev_size=test_dev_size)
         )
         self.batch_size = batch_size
-        super().__init__(image_transcription_key=self.IMAGE_TRANSCRIPTION_KEY)
+        super().__init__(
+            image_path_key=self.IMAGE_PATH_KEY,
+            image_transcription_key=self.IMAGE_TRANSCRIPTION_KEY
+        )
 
     @staticmethod
     def read_dataframe(
@@ -105,28 +111,64 @@ class IAM(BaseImageDataset):
     def vocabulary_size(self, partition: Literal["train", "test", "dev"]) -> int:
         return len(self.get_vocabulary(partition=partition))
 
-    def preprocess_image(self, image_path) -> EagerTensor:
+    def distortion_free_resize(self, image):
+        w, h = self.IMAGE_WIDTH, self.IMAGE_HEIGHT
+        image = tf.image.resize(image, size=(h, w), preserve_aspect_ratio=True)
+
+        # Check tha amount of padding needed to be done.
+        pad_height = h - tf.shape(image)[0]
+        pad_width = w - tf.shape(image)[1]
+
+        # Only necessary if you want to do same amount of padding on both sides.
+        if pad_height % 2 != 0:
+            height = pad_height // 2
+            pad_height_top = height + 1
+            pad_height_bottom = height
+        else:
+            pad_height_top = pad_height_bottom = pad_height // 2
+
+        if pad_width % 2 != 0:
+            width = pad_width // 2
+            pad_width_left = width + 1
+            pad_width_right = width
+        else:
+            pad_width_left = pad_width_right = pad_width // 2
+
+        image = tf.pad(
+            image,
+            paddings=[
+                [pad_height_top, pad_height_bottom],
+                [pad_width_left, pad_width_right],
+                [0, 0],
+            ],
+        )
+
+        image = tf.transpose(image, perm=[1, 0, 2])
+        image = tf.image.flip_left_right(image)
+        return image
+
+    def preprocess_image(self, image_path: str) -> EagerTensor:
         png = tf.io.read_file(image_path)
         decoded = tf.image.decode_png(contents=png, channels=1)
-        image = tf.cast(decoded, tf.float32) / 255.0
+        image = self.distortion_free_resize(image=decoded)
+        image = tf.cast(image, tf.float32) / 255.0
         return image
 
     def vectorize_label(self, label: str) -> EagerTensor:
         padding_token = 99
-        mapped = self.char_to_num(tf.strings.unicode_split(label, input_encoding="UTF-8"))
-        print(label)
+        label = self.char_to_num(tf.strings.unicode_split(label, input_encoding="UTF-8"))
         return tf.pad(
-            tensor=mapped,
+            tensor=label,
             paddings=[[0, self.max_label_length_train - len(label)]],
             constant_values=padding_token
         )
 
-    def process_images_labels(self, image_path, label) -> dict[str, EagerTensor]:
+    def process_images_labels(self, image_path: str, label: str) -> dict[str, EagerTensor]:
         return {"image": self.preprocess_image(image_path=image_path), "label": self.vectorize_label(label=label)}
 
-    def prepare_dataset(self):
+    def prepare_dataset(self, partition: Literal["train", "test", "dev"]) -> PrefetchDataset:
         dataset = tf.data.Dataset.from_tensor_slices(
-            tensors=(self.get_image_paths(partition="train"), self.get_labels(partition="train"))
+            tensors=(self.get_image_paths(partition=partition), self.get_labels(partition=partition))
         ).map(
             self.process_images_labels, num_parallel_calls=AUTOTUNE
         )
