@@ -28,8 +28,8 @@ def test_process_text_input():
 @pytest.mark.parametrize(
     ("file_input", "expected"),
     [(file_path, language_code) for file_path, language_code in zip(
-        glob.glob(str(Paths.TESTS / "test_inputs/*.txt")),
-        [Path(file).stem for file in glob.glob(str(Paths.TESTS / "test_inputs/*.txt"))]
+        glob.glob(str(Paths.TESTS / "test_inputs/text/*.txt")),
+        [Path(file).stem for file in glob.glob(str(Paths.TESTS / "test_inputs/text/*.txt"))]
     )]
 )
 def test_process_text_file(file_input, expected):
