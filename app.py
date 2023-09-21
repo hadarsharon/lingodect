@@ -75,9 +75,10 @@ AppParams = namedtuple(
 fake = Faker(FAKE_TEXT_LOCALES)
 fake_texts = [fake.text() for _ in range(FAKE_TEXTS)]
 datasets = [Massive(), CLIRMatrix()]
+
 text_detector = MultinomialNBDetector.from_joblib(datasets=datasets)
 speech_detector = ECAPA_TDNN()
-# image_detector = OCR.load_model()
+image_detector = OCR.load_model()
 
 
 def open_browser():

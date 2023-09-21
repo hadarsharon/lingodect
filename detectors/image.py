@@ -2,6 +2,10 @@
 Module for defining image-based handwritten language detection models and their full implementation(s).
 These models are used with Datasets from the datasets.py module, to perform language classification on text.
 """
+import logging
+import os
+import sys
+
 import numpy as np
 import tensorflow as tf
 from keras import Model
@@ -12,6 +16,14 @@ from utils.config import Paths
 from utils.datasets import BaseImageDataset
 
 MODEL_PATH = str(Paths.MODELS / "image/ocr/model.keras")
+
+logger = logging.getLogger()
+logging.basicConfig(
+    stream=sys.stdout,
+    format='%(asctime)s.%(msecs)03d %(levelname)s {%(module)s} [%(funcName)s] %(message)s',
+    datefmt='%Y-%m-%d,%H:%M:%S',
+    level=logging.INFO
+)
 
 
 class CTCLayer(keras.layers.Layer):
@@ -164,9 +176,11 @@ def train_model(
 
 class OCR:
     @staticmethod
-    def save_model(model: Model):
+    def save_model(model: Model, filepath: os.PathLike = MODEL_PATH):
+        logger.info(rf"Saving Keras OCR model to {filepath}")
         model.save(MODEL_PATH)
 
     @staticmethod
-    def load_model():
+    def load_model(filepath: os.PathLike = MODEL_PATH):
+        logger.info(rf"Loading Keras OCR model from {filepath}")
         return keras.models.load_model(MODEL_PATH)
