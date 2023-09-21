@@ -16,7 +16,7 @@ install_requires = [
     "speechbrain~=0.5.15",  # used for speech language recognition model
     "speechrecognition~=3.10.0",  # used for speech transcription model
     "tensorflow~=2.11.1",  # for building the handwriting recognition model
-    "torchaudio~=2.0.2"  # audio processing
+    "torchaudio~=2.0.2",  # audio processing
     "zstandard~=0.21.0",  # data compression
 ]
 
