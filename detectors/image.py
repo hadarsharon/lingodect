@@ -2,6 +2,7 @@
 Module for defining image-based handwritten language detection models and their full implementation(s).
 These models are used with Datasets from the datasets.py module, to perform language classification on text.
 """
+import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.python.data.ops.dataset_ops import PrefetchDataset
@@ -92,42 +93,46 @@ def build_model(dataset_base: BaseImageDataset):
     return model
 
 
-# def calculate_edit_distance(labels, predictions):
-#     # Get a single batch and convert its labels to sparse tensors.
-#     saprse_labels = tf.cast(tf.sparse.from_dense(labels), dtype=tf.int64)
-#
-#     # Make predictions and convert them to sparse tensors.
-#     input_len = np.ones(predictions.shape[0]) * predictions.shape[1]
-#     predictions_decoded = keras.backend.ctc_decode(
-#         predictions, input_length=input_len, greedy=True
-#     )[0][0][:, :max_len]
-#     sparse_predictions = tf.cast(
-#         tf.sparse.from_dense(predictions_decoded), dtype=tf.int64
-#     )
-#
-#     # Compute individual edit distances and average them out.
-#     edit_distances = tf.edit_distance(
-#         sparse_predictions, saprse_labels, normalize=False
-#     )
-#     return tf.reduce_mean(edit_distances)
-#
-#
-# class EditDistanceCallback(keras.callbacks.Callback):
-#     def __init__(self, pred_model):
-#         super().__init__()
-#         self.prediction_model = pred_model
-#
-#     def on_epoch_end(self, epoch, logs=None):
-#         edit_distances = []
-#
-#         for i in range(len(validation_images)):
-#             labels = validation_labels[i]
-#             predictions = self.prediction_model.predict(validation_images[i])
-#             edit_distances.append(calculate_edit_distance(labels, predictions).numpy())
-#
-#         print(
-#             f"Mean edit distance for epoch {epoch + 1}: {np.mean(edit_distances):.4f}"
-#         )
+def calculate_edit_distance(labels, predictions):
+    # Get a single batch and convert its labels to sparse tensors.
+    saprse_labels = tf.cast(tf.sparse.from_dense(labels), dtype=tf.int64)
+
+    # Make predictions and convert them to sparse tensors.
+    input_len = np.ones(predictions.shape[0]) * predictions.shape[1]
+    predictions_decoded = keras.backend.ctc_decode(
+        predictions, input_length=input_len, greedy=True
+    )[0][0][:, :max_len]
+    sparse_predictions = tf.cast(
+        tf.sparse.from_dense(predictions_decoded), dtype=tf.int64
+    )
+
+    # Compute individual edit distances and average them out.
+    edit_distances = tf.edit_distance(
+        sparse_predictions, saprse_labels, normalize=False
+    )
+    return tf.reduce_mean(edit_distances)
+
+
+class EditDistanceCallback(keras.callbacks.Callback):
+    def __init__(self, pred_model, ds):
+        super().__init__()
+        self.prediction_model = pred_model
+        self.dataset = ds
+
+    def on_epoch_end(self, epoch, logs=None):
+        edit_distances = []
+
+        validation_labels = self.dataset.get_labels(partition="dev")
+        validation_images = self.dataset.get_image_paths(partition="dev")
+        for i in range(len(validation_labels)):
+            labels = validation_labels[i]
+            predictions = self.prediction_model.predict(validation_images[i])
+            edit_distances.append(calculate_edit_distance(labels, predictions).numpy())
+
+        print(
+            f"Mean edit distance for epoch {epoch + 1}: {np.mean(edit_distances):.4f}"
+        )
+
 
 def train_model(
         dataset_base: BaseImageDataset,
@@ -140,12 +145,12 @@ def train_model(
     prediction_model = keras.models.Model(
         model.get_layer(name="image").input, model.get_layer(name="dense2").output
     )
-    # edit_distance_callback = EditDistanceCallback(prediction_model)
+    edit_distance_callback = EditDistanceCallback(pred_model=prediction_model, ds=dataset_base)
 
     # Train the model.
     model.fit(
         train_ds,
         validation_data=validation_ds,
         epochs=epochs,  # To get good results this should be at least 50
-        # callbacks=[edit_distance_callback],
+        callbacks=[edit_distance_callback],
     )
