@@ -206,3 +206,10 @@ class MultinomialNBDetector:
             logger.info(rf"Dumping hashing vectorizer to {f.name}")
             dill.dump(self.hashing_vectorizer, f)
         logger.info("Done serializing MultinomialNBDetector objects.")
+
+if __name__ == "__main__":
+    from loaders.text.clirmatrix import CLIRMatrix
+    from loaders.text.massive import Massive
+    datasets = [Massive(), CLIRMatrix()]
+    detector = MultinomialNBDetector(datasets=datasets)
+    detector.fit()
