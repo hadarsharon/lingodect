@@ -4,10 +4,14 @@ These models are used with Datasets from the datasets.py module, to perform lang
 """
 import numpy as np
 import tensorflow as tf
+from keras import Model
 from tensorflow import keras
 from tensorflow.python.data.ops.dataset_ops import PrefetchDataset
 
+from utils.config import Paths
 from utils.datasets import BaseImageDataset
+
+MODEL_PATH = str(Paths.MODELS / "image/ocr/model.keras")
 
 
 class CTCLayer(keras.layers.Layer):
@@ -93,7 +97,7 @@ def build_model(dataset_base: BaseImageDataset):
     return model
 
 
-def calculate_edit_distance(labels, predictions):
+def calculate_edit_distance(labels, predictions, max_len):
     # Get a single batch and convert its labels to sparse tensors.
     saprse_labels = tf.cast(tf.sparse.from_dense(labels), dtype=tf.int64)
 
@@ -127,7 +131,9 @@ class EditDistanceCallback(keras.callbacks.Callback):
         for i in range(len(validation_labels)):
             labels = validation_labels[i]
             predictions = self.prediction_model.predict(validation_images[i])
-            edit_distances.append(calculate_edit_distance(labels, predictions).numpy())
+            edit_distances.append(
+                calculate_edit_distance(labels, predictions, self.dataset.max_label_length_train).numpy()
+            )
 
         print(
             f"Mean edit distance for epoch {epoch + 1}: {np.mean(edit_distances):.4f}"
@@ -154,3 +160,13 @@ def train_model(
         epochs=epochs,  # To get good results this should be at least 50
         callbacks=[edit_distance_callback],
     )
+
+
+class OCR:
+    @staticmethod
+    def save_model(model: Model):
+        model.save(MODEL_PATH)
+
+    @staticmethod
+    def load_model():
+        return keras.models.load_model(MODEL_PATH)
