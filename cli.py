@@ -4,7 +4,6 @@ Wraps around the core library modules and serves the UI or CLI
 """
 import mimetypes
 from argparse import ArgumentParser
-
 from werkzeug.datastructures import FileStorage
 
 
