@@ -1,6 +1,5 @@
 import webbrowser
 from collections import namedtuple
-from contextlib import closing
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from threading import Timer
@@ -15,10 +14,9 @@ from werkzeug.datastructures import FileStorage
 
 from detectors.speech import ECAPA_TDNN
 from detectors.text import MultinomialNBDetector
-from utils.config import Paths
-from loaders.text.massive import Massive
 from loaders.text.clirmatrix import CLIRMatrix
-from utils.db import SQLiteDB
+from loaders.text.massive import Massive
+from utils.config import Paths
 
 LOCALES_DATAFRAME = pd.DataFrame([locale.split(r'_') for locale in AVAILABLE_LOCALES],
                                  columns=["language_code", "country_code"]).drop_duplicates(ignore_index=True)
@@ -73,6 +71,12 @@ AppParams = namedtuple(
     defaults=[app_params_defaults.get(field) for field in app_params_fields]
 )
 
+fake = Faker(FAKE_TEXT_LOCALES)
+fake_texts = [fake.text() for _ in range(FAKE_TEXTS)]
+datasets = [Massive(), CLIRMatrix()]
+text_detector = MultinomialNBDetector.from_joblib(datasets=datasets)
+speech_detector = ECAPA_TDNN()
+
 
 def open_browser():
     webbrowser.open_new(rf"http://{APP_HOST}:{APP_PORT}/")
@@ -81,6 +85,7 @@ def open_browser():
 def get_language_name(language_code: str) -> str:
     language = pycountry.languages.get(alpha_2=language_code) or pycountry.languages.get(alpha_3=language_code)
     return getattr(language, "name", "Unknown")
+
 
 def process_text(
         text_input: Optional[str] = None,
@@ -147,7 +152,7 @@ def process_file(req: request, file_input: FileStorage) -> AppParams:
             transcribe=request.form.get("speechTranscriptionSwitch", "").lower() == "on"
         )
     else:
-        return  # TODO: do something
+        raise NotImplementedError(f"Unknown MIME-Type received: {file_input.mimetype}")
 
 
 def process_input(req: request):
@@ -202,10 +207,5 @@ def index():
 
 
 if __name__ == "__main__":
-    fake = Faker(FAKE_TEXT_LOCALES)
-    fake_texts = [fake.text() for _ in range(FAKE_TEXTS)]
-    datasets = [Massive(), CLIRMatrix()]
-    text_detector = MultinomialNBDetector.from_joblib(datasets=datasets)
-    speech_detector = ECAPA_TDNN()
     Timer(1, open_browser).start()
     app.run(host=APP_HOST, port=APP_PORT)

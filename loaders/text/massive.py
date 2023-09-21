@@ -9,7 +9,7 @@ from utils.config import Paths
 from utils.datasets import BaseTextDataset
 
 
-class Massive(BaseTextDataset):  # TODO: perhaps take from Hugging Face
+class Massive(BaseTextDataset):
     """
     A loader class pertaining to the MASSIVE dataset.
     Includes helper methods for processing, preparing and transforming the dataset for NLP models used in this app.
