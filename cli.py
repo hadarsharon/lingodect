@@ -50,7 +50,13 @@ def main():
         print(rf"Detected language(s): {prediction.language_names} ({prediction.language_codes})")
     else:  # file
         mimetype = mimetypes.MimeTypes().guess_type(args.file)[0]
-        if "audio" in mimetype:
+        if "text" in mimetype:
+            from app import process_text
+            with open(args.file, 'rb') as f:
+                prediction = process_text(file_input=FileStorage(f), multi_language=args.multi)
+                print('⸻' * 25)
+                print(rf"Detected language(s): {prediction.language_names} ({prediction.language_codes})")
+        elif "audio" in mimetype:
             from app import process_audio
             with open(args.file, 'rb') as f:
                 prediction = process_audio(file_input=FileStorage(f), transcribe=args.transcribe)
