@@ -13,3 +13,4 @@ class Paths:
     UTILS = PROJECT_ROOT / "utils"
     MODELS = PROJECT_ROOT / "models"
     TESTS = PROJECT_ROOT / "tests"
+    EVALUATIONS = PROJECT_ROOT / "evaluations"
