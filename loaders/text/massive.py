@@ -85,7 +85,3 @@ class Massive(BaseTextDataset):
     @cached_property
     def dev_dataset(self) -> pd.DataFrame:
         return self.get_base_dataset(partition="dev")
-
-if __name__ == "__main__":
-    massive = Massive()
-    massive.get_base_dataset(partition="train")

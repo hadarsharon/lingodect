@@ -5,7 +5,7 @@ Datasets are used for fitting and training the language detection models
 import logging
 import sqlite3
 import sys
-from abc import ABC
+from abc import ABC, abstractmethod
 from functools import cached_property
 from typing import Optional, NoReturn, Literal
 
@@ -110,18 +110,22 @@ class BaseTextDataset(ABC):
         Optionally, can return a specific partition from it - this can be useful for using them as cached properties.
         """
 
+    @property
+    @abstractmethod
     def train_dataset(self) -> pd.DataFrame:
         """
         Should return the partition in the dataset for training the model
         For example: as part of fitting the parameters to the model when it's learning
         """
-
+    @property
+    @abstractmethod
     def test_dataset(self) -> pd.DataFrame:
         """
         Should return the partition in the dataset for testing the model
         For example: to test the accuracy of the model immediately after having trained it
         """
-
+    @property
+    @abstractmethod
     def dev_dataset(self) -> pd.DataFrame:
         """
         Should return the partition in the dataset for validating the model

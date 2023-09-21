@@ -41,7 +41,7 @@ def main():
         detector.to_joblib()
 
     print('⸻' * 25)
-    print("Running language detection...")
+    print("Running language detection ...")
     print('*' * 25)
     if args.string:
         from app import process_text

@@ -76,3 +76,7 @@ class CLIRMatrix(BaseTextDataset):
     @cached_property
     def test_dataset(self) -> pd.DataFrame:
         return self.get_base_dataset(partition="test")
+
+    @cached_property
+    def dev_dataset(self) -> pd.DataFrame:
+        return self.get_base_dataset(partition="dev")
