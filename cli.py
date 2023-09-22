@@ -48,7 +48,7 @@ def main():
         print('⸻' * 25)
         print(rf"Detected language(s): {prediction.language_names} ({prediction.language_codes})")
     else:  # file
-        mimetype = mimetypes.MimeTypes().guess_type(args.file)[0]
+        mimetype = mimetypes.guess_type(args.file)[0]
         if "text" in mimetype:
             from app import process_text
             with open(args.file, 'rb') as f:

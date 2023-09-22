@@ -26,7 +26,9 @@ class ECAPA_TDNN:  # noinspection PyPep8Naming
         """
         with sr.AudioFile(audio_path) as source:
             audio_data = self.recognizer.listen(source)
-            return self.recognizer.recognize_google(audio_data=audio_data, language=language)
+            # return self.recognizer.recognize_google(audio_data=audio_data, language=language)
+            return self.recognizer.recognize_whisper(audio_data=audio_data, language=language, translate=False,
+                                                     model="medium")
 
     @staticmethod
     def detect_speech_language(audio_path: str, save_dir: str = MODEL_DIRECTORY) -> list[str]:
