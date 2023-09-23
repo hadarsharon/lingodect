@@ -5,6 +5,7 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
+import seaborn as sns
 from scipy.sparse import csr_matrix
 from sklearn.metrics import (
     accuracy_score,
@@ -18,7 +19,10 @@ from sklearn.naive_bayes import MultinomialNB
 from detectors.text import MultinomialNBDetector
 from loaders.text.clirmatrix import CLIRMatrix
 from loaders.text.massive import Massive
+from utils.config import Paths
 from utils.datasets import BaseTextDataset
+
+sns.set(rc={'figure.figsize': ("12", "19.2")})
 
 
 @dataclass
@@ -26,7 +30,7 @@ class Evaluation:
     accuracy_score: float
     f1_score: float
     confusion_matrix: np.ndarray
-    classification_report: str
+    classification_report: dict
 
 
 def plot_confusion_matrix(
@@ -40,6 +44,20 @@ def plot_confusion_matrix(
         figpath = str(Path(figures_dir) / figure_name)
         plt.figure_.savefig(figpath)
         print(rf"Confusion matrix figure saved to {figpath}")
+
+
+def plot_classification_report(
+        results: Evaluation,
+        figure_name: str = "classification_report.png",
+        figures_dir: Optional[os.PathLike] = None
+) -> None:
+    df = pd.DataFrame(results.classification_report).iloc[:-1, :].T
+    plt = sns.heatmap(df, annot=True)
+    if figures_dir:
+        figpath = str(Path(figures_dir) / figure_name)
+        fig = plt.get_figure()
+        fig.savefig(figpath)
+        print(rf"Classification report figure saved to {figpath}")
 
 
 def evaluate_multinomial_nb_on_datasets(datasets: list[BaseTextDataset]) -> dict[BaseTextDataset, Evaluation]:
@@ -63,7 +81,14 @@ def evaluate_multinomial_nb_on_datasets(datasets: list[BaseTextDataset]) -> dict
         print("Calculating confusion matrix ...")
         matrix = confusion_matrix(y_true=y_test, y_pred=y_pred)
         print("Building classification report...")
-        report = classification_report(y_true=y_test, y_pred=y_pred)
+        report = classification_report(y_true=y_test, y_pred=y_pred, labels=list(set(y_test)), output_dict=True)
+        labels = []
+        for cls in report.keys():
+            if cls.isnumeric():
+                # transform numeric classes (e.g. 128) to language code (e.g. 'af')
+                labels.append((cls, multinomial_nb.label_encoder.inverse_transform([int(cls)])[0]))
+        for cls, transformed in labels:
+            report[transformed] = report.pop(cls)
         print("Evaluation results are ready!")
         print('⸻' * 25)
         evaluations[dataset] = Evaluation(
@@ -79,4 +104,10 @@ if __name__ == "__main__":
     massive = Massive()
     clirmatrix = CLIRMatrix()
     evaluations = evaluate_multinomial_nb_on_datasets(datasets=[massive, clirmatrix])
-    print(list(evaluations.values())[1].classification_report)
+    i = 0
+    for dataset, evaluation in evaluations.items():
+        plot_classification_report(
+            results=evaluation,
+            figures_dir=Paths.EVALUATIONS / "figures", figure_name=rf"classification_report_{i}.png"
+        )
+        i += 1

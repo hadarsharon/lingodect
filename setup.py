@@ -14,6 +14,7 @@ install_requires = [
     "pycountry~=22.3.5",  # language names from codes
     "pytest~=7.4.2",  # unit testing
     "scikit-learn~=1.3.0",  # for building the language classification model
+    "seaborn~=0.12.2",  # graphs and plots for evaluation reports
     "soundfile~=0.12.1",  # used for speech transcription model
     "speechbrain~=0.5.15",  # used for speech language recognition model
     "speechrecognition~=3.10.0",  # used for speech transcription model
